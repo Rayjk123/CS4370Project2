@@ -90,13 +90,12 @@ public class ExtHashMap <K, V>
     {
         Set <Map.Entry <K, V>> enSet = new HashSet <> ();
 
-        //  T O   B E   I M P L E M E N T E D
-        for(int f = 0; f < hTable.size(); f++){
-            Bucket b = hTable.get(f);
-            for(int g = 0; g < b.nKeys; g++){
+        for(int f = 0; f < hTable.size(); f++){//Increment through hTable.
+            Bucket b = dir.get(f);
+            for(int g = 0; g < b.nKeys; g++){//Increment through dir.
                 enSet.add(new AbstractMap.SimpleEntry<>(b.key[g], b.value[g])); 
-            }
-        }
+            }//for
+        }//for
             
         return enSet;
     } // entrySet
@@ -111,20 +110,19 @@ public class ExtHashMap <K, V>
         int    i = h (key);
         Bucket b = dir.get (i);
 
-        //  T O   B E   I M P L E M E N T E D
         
-        if(b.nKeys == 0){
+        if(b.nKeys == 0){//Returns NULL if empty.
             return null;
         }
         
-        while(b.nKeys != 0){
+        while(b.nKeys != 0){//Return the Value if the key is present.
             for(int f=0; f < b.nKeys; f++){
                 if(key.equals(b.key[f])){
                     return b.value[f];
-                }
-            }
+                }//if
+            }//for
             
-        }
+        }//while
 
         return null;
     } // get
@@ -140,19 +138,18 @@ public class ExtHashMap <K, V>
         int    i = h (key);
         Bucket b = dir.get (i);
 
-        //  T O   B E   I M P L E M E N T E D
         
-        if(b.nKeys < SLOTS){
+        if(b.nKeys < SLOTS){//Add the key/value to the bucket.
             b.key[b.nKeys] = key;
             b.value[b.nKeys] = value;
             b.nKeys++;
-        }
+        }//if
         
-        else{
+        else{//Add a bucket to hTable and increment mod. Then recursively call put().
             this.mod = this.mod++;
             this.hTable.add(b);
             put(key, value);
-        }
+        }//else
         
         return null;
     } // put
@@ -174,17 +171,16 @@ public class ExtHashMap <K, V>
         out.println ("Hash Table (Extendable Hashing)");
         out.println ("-------------------------------------------");
 
-        //  T O   B E   I M P L E M E N T E D
         
-        for(int i=0; i<hTable.size();i++){
+        for(int i=0; i<hTable.size();i++){//Increment through hTable
             out.print(i + ":");
-            Bucket b = hTable.get(i);
+            Bucket b = dir.get(i);
             out.print("[ ");
-            for(int j = 0; j < 4; j++){
+            for(int j = 0; j < 4; j++){//Increment through dir
                 out.print(b.key + " / " + b.value);
-            }
+            }//for
             out.print(" ]\n");
-        }
+        }//for
             
             
                 
