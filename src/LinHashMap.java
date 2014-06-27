@@ -141,8 +141,7 @@ public class LinHashMap <K, V>
     public V put (K key, V value)
     {
         int i = h (key);
-        //assuming no split
-         Bucket temp = hTable.get(i);
+        Bucket temp = hTable.get(i);
         if(temp.nKeys < SLOTS){
             //simple insert; no split needed
             //yay!
