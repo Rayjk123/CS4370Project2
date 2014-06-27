@@ -91,6 +91,12 @@ public class ExtHashMap <K, V>
         Set <Map.Entry <K, V>> enSet = new HashSet <> ();
 
         //  T O   B E   I M P L E M E N T E D
+        for(int f = 0; f < hTable.size(); f++){
+            Bucket b = hTable.get(f);
+            for(int g = 0; g < b.nKeys; g++){
+                enSet.add(new AbstractMap.SimpleEntry<>(b.key[g], b.value[g])); 
+            }
+        }
             
         return enSet;
     } // entrySet
@@ -106,6 +112,19 @@ public class ExtHashMap <K, V>
         Bucket b = dir.get (i);
 
         //  T O   B E   I M P L E M E N T E D
+        
+        if(b.nKeys == 0){
+            return null;
+        }
+        
+        while(b.nKeys != 0){
+            for(int f=0; f < b.nKeys; f++){
+                if(key.equals(b.key[f])){
+                    return b.value[f];
+                }
+            }
+            
+        }
 
         return null;
     } // get
@@ -122,7 +141,19 @@ public class ExtHashMap <K, V>
         Bucket b = dir.get (i);
 
         //  T O   B E   I M P L E M E N T E D
-
+        
+        if(b.nKeys < SLOTS){
+            b.key[b.nKeys] = key;
+            b.value[b.nKeys] = value;
+            b.nKeys++;
+        }
+        
+        else{
+            this.mod = this.mod++;
+            this.hTable.add(b);
+            put(key, value);
+        }
+        
         return null;
     } // put
 
@@ -144,6 +175,20 @@ public class ExtHashMap <K, V>
         out.println ("-------------------------------------------");
 
         //  T O   B E   I M P L E M E N T E D
+        
+        for(int i=0; i<hTable.size();i++){
+            out.print(i + ":");
+            Bucket b = hTable.get(i);
+            out.print("[ ");
+            for(int j = 0; j < 4; j++){
+                out.print(b.key + " / " + b.value);
+            }
+            out.print(" ]\n");
+        }
+            
+            
+                
+            
 
         out.println ("-------------------------------------------");
     } // print
