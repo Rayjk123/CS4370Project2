@@ -82,6 +82,10 @@ public class LinHashMap <K, V>
         hTable = new ArrayList <> ();
         mod1   = initSize;
         mod2   = 2 * mod1;
+        
+        //initialize the buckets in hTable to null buckets
+        for(int t=0; t<initSize; t++)
+            hTable.add(new Bucket(null));
     } // constructor
 
     /********************************************************************************
@@ -91,8 +95,12 @@ public class LinHashMap <K, V>
     public Set <Map.Entry <K, V>> entrySet ()
     {
         Set <Map.Entry <K, V>> enSet = new HashSet <> ();
-
-        //  T O   B E   I M P L E M E N T E D
+        for(int x = 0; x < hTable.size(); x++){//loop through the buckets
+            Bucket temp = hTable.get(x);
+            for(int z=0; z<temp.nKeys; z++){//loop through the values/keys
+                enSet.add(new AbstractMap.SimpleEntry<>(temp.key[z], temp.value[z])); //add the key and value to the HashSet
+            }
+        }
             
         return enSet;
     } // entrySet
@@ -104,11 +112,24 @@ public class LinHashMap <K, V>
      */
     public V get (Object key)
     {
+        
         int i = h (key);
+        Bucket tmp = hTable.get(i);
+        //make sure the bucket isn't empty
+        //because that would be a major waste of time
+        if(tmp.nKeys == 0)
+            return null;
+        
+        //go through my buckets in table entry i
+        while(tmp != null){
+            for(int m=0; m<tmp.nKeys; m++){
+                if(key.equals(tmp.key[m]))
+                    return tmp.value[m]; //found it
+            }//for loop over values in bucket
+            tmp = tmp.next; // key not in this bucket so try the next one
+        }//while bucket != null
 
-        //  T O   B E   I M P L E M E N T E D
-
-        return null;
+        return null;//if we make it this far, it ain't in the table so return null
     } // get
 
     /********************************************************************************
@@ -120,9 +141,47 @@ public class LinHashMap <K, V>
     public V put (K key, V value)
     {
         int i = h (key);
-
-        //  T O   B E   I M P L E M E N T E D
-
+        //assuming no split
+         Bucket temp = hTable.get(i);
+        if(temp.nKeys < SLOTS){
+            //simple insert; no split needed
+            //yay!
+            temp.key[temp.nKeys] = key;
+            temp.value[temp.nKeys] = value;
+            temp.nKeys++;
+        }else{
+            //sadly we may need to split
+            //boo
+            hTable.add(new Bucket(null));
+            mod1++;
+            //move pointer
+            while(temp.next != null){
+                temp = temp.next;
+            }
+            //check in the last bucket of the chain
+            if(temp.nKeys < SLOTS){
+                temp.key[temp.nKeys] = key;
+                temp.value[temp.nKeys] = value;
+                temp.nKeys++;
+            }else{
+                temp.next = new Bucket(null);
+                temp = temp.next;
+                temp.key[temp.nKeys]=key;
+                temp.value[temp.nKeys]=value;
+                temp.nKeys++;
+            }//else
+            //time for the actually splitting
+            for(int p=0; p<hTable.size();p++){
+                temp=hTable.get(p);
+                while(temp!=null){
+                    int oldNKeys = temp.nKeys;
+                    temp.nKeys=0;//so it does a simple insert when we insert
+                    for(int b=0; b<oldNKeys;b++){
+                        put(temp.key[b], temp.value[b]);
+                    }
+                }//while the bucket isn't null
+            }//for over hTable
+        }//else
         return null;
     } // put
 
@@ -143,8 +202,39 @@ public class LinHashMap <K, V>
         out.println ("Hash Table (Linear Hashing)");
         out.println ("-------------------------------------------");
 
-        //  T O   B E   I M P L E M E N T E D
-
+        for(int x=0; x<hTable.size();x++){
+            out.print(x + ":");
+            Bucket tmp = hTable.get(x);
+            boolean chain = false; //assume no chain
+            if(tmp.next!=null)
+                chain=true;//if next exist, there is a chain
+            if(chain){
+                out.print("[ ");
+                for(int z=0; z<SLOTS;z++){
+                    out.print(tmp.key[z]);
+                    if(SLOTS!=z+1)
+                        out.print(", ");//there is another item
+                    else
+                        out.print(" ] --> ");//end of bucket, but another one is coming
+                }//for
+                out.print("[ ");
+                for(int z=0;z<SLOTS;z++){
+                    out.print(tmp.next.key[z]);
+                    if(SLOTS!=z+1)
+                        out.print(" ]");
+                }
+            }else{
+                //only one bucket
+                out.print("[ ");
+                for(int z=0; z<SLOTS; z++){
+                    out.print(tmp.key[z]);
+                    if(SLOTS != z+1)
+                        out.print(", ");
+                }//for
+                out.print(" ]");
+            }
+            out.println();
+        }//for over hTable
         out.println ("-------------------------------------------");
     } // print
 
