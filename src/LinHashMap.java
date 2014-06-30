@@ -114,6 +114,8 @@ public class LinHashMap <K, V>
     {
         
         int i = h (key);
+        if(i<split)
+            i=h2(key);
         Bucket tmp = hTable.get(i);
         //make sure the bucket isn't empty
         //because that would be a major waste of time
@@ -141,6 +143,8 @@ public class LinHashMap <K, V>
     public V put (K key, V value)
     {
         int i = h (key);
+        if(i<split)
+            i=h2(key);
         Bucket temp = hTable.get(i);
         if(temp.nKeys < SLOTS){
             //simple insert; no split needed
@@ -152,7 +156,7 @@ public class LinHashMap <K, V>
             //sadly we may need to split
             //boo
             hTable.add(new Bucket(null));
-            mod1++;
+            //mod1++;
             //move pointer
             while(temp.next != null){
                 temp = temp.next;
@@ -170,16 +174,56 @@ public class LinHashMap <K, V>
                 temp.nKeys++;
             }//else
             //time for the actually splitting
-            for(int p=0; p<hTable.size();p++){
-                temp=hTable.get(p);
-                while(temp!=null){
-                    int oldNKeys = temp.nKeys;
-                    temp.nKeys=0;//so it does a simple insert when we insert
-                    for(int b=0; b<oldNKeys;b++){
-                        put(temp.key[b], temp.value[b]);
+//            for(int p=0; p<hTable.size();p++){
+//                temp=hTable.get(p);
+//                while(temp!=null){
+//                    int oldNKeys = temp.nKeys;
+//                    temp.nKeys=0;//so it does a simple insert when we insert
+//                    for(int b=0; b<oldNKeys;b++){
+//                        put(temp.key[b], temp.value[b]);
+//                    }
+//                }//while the bucket isn't null
+//            }//for over hTable
+            int numKeys = 0;
+            for(int y =0; y<hTable.size();y++){
+                Bucket bkt = hTable.get(y);
+                do{
+                    numKeys = numKeys + bkt.nKeys;
+                    bkt=bkt.next;
+                }while(bkt !=null);
+            }
+            double alpha = ((double)numKeys)/(SLOTS * mod1);
+            if(alpha >= 1){
+                Bucket temp2 = new Bucket(null);//replace the split
+                Bucket temp3 = new Bucket(null);//the new bucket
+                temp = hTable.get(split);//the bucket to split
+                for(int p=0; p<temp.nKeys; p++){
+                    int z = h2(temp.key[p]);
+                    if(z == split){
+                        if(temp2.next ==null){
+                            temp2.next = new Bucket(null);
+                            temp2 = temp2.next;
+                        }
+                        temp2.key[temp2.nKeys] = temp.key[p];
+                        temp2.value[temp2.nKeys] = temp.value[p];
+                        temp2.nKeys++;
+                    }else{
+                        if(temp3.next == null){
+                            temp3.next = new Bucket(null);
+                            temp3 = temp3.next;
+                        }
+                        temp3.key[temp3.nKeys] = temp.key[p];
+                        temp3.value[temp3.nKeys] = temp.value[p];
                     }
-                }//while the bucket isn't null
-            }//for over hTable
+                }
+                if(split == mod1 -1 ){
+                    mod1= mod1*2;
+                    mod2= mod1*2;
+                    split=0;
+                }else{
+                    split++;
+                }
+            }   
         }//else
         return null;
     } // put
